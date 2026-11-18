@@ -280,13 +280,12 @@ excluded <- names(partners)[partners < 5]
 if (length(excluded)) {
   message("Exclude taxa: ", toString(excluded))
 }
+# Each supported species must have pairs with every other supported species
 tax_pairs <- tax_pairs[
   !tax_pairs$first %in% excluded & !tax_pairs$second %in% excluded,
 ]
-partners <- table(c(tax_pairs$first, tax_pairs$second))
-stopifnot(length(unique(partners)) == 1)
+stopifnot(nrow(tax_pairs) == choose(nrow(species_config), 2))
 
-# Remaining species must all have the same number of partners
 orthologs_df <- filter(
   orthologs_df,
   !g1_taxon_id %in% excluded,
@@ -1004,9 +1003,8 @@ synonyms_df <- tibble(
   distinct()
 nrow(synonyms_df)
 
-# Remove missing values or placeholders
+# Remove missing values or placeholders, such as -, NA, or null
 # Remove whitespace, list separators (, * ;), or ? and &
-# (? and & are mostly damaged Greek letters, such as Pk?1 and &agr-PS3)
 # Remove digits only because they look like NCBI Gene IDs
 # Remove tags, such as p19<sup>ARF</sup>
 # Remove worm locus tags, such as CELE_Y74C9A.3
@@ -1016,6 +1014,7 @@ synonyms_df <- filter(
   !is.na(synonym),
   nzchar(synonym),
   synonym != "-",
+  !str_to_lower(synonym) %in% c("na", "nan", "null", "none", "n/a"),
   !str_detect(synonym, "[\\s,*;?\\&]"),
   !str_detect(synonym, "^[0-9]+$"),
   !str_detect(synonym, "<[^>]+>"),
@@ -1024,10 +1023,13 @@ synonyms_df <- filter(
 )
 nrow(synonyms_df)
 
-# Remove synonyms that match any primary symbol in the same species
+# Remove synonyms that match a primary symbol or Ensembl ID in the same species
 synonyms_df <- anti_join(
   synonyms_df,
-  transmute(genes_df, taxon_id, synonym = symbol),
+  bind_rows(
+    transmute(genes_df, taxon_id, synonym = symbol),
+    transmute(genes_df, taxon_id, synonym = ensembl_id)
+  ),
   by = c("taxon_id", "synonym")
 )
 nrow(synonyms_df)
