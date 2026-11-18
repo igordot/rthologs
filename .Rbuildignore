@@ -1,0 +1,9 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^[.]?air[.]toml$
+^LICENSE\.md$
+^\.github$
+^_pkgdown\.yml$
+^AGENTS\.md$
+^\.remember$
