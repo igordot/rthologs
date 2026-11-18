@@ -16,6 +16,7 @@ License: MIT + file LICENSE
 Depends: 
     R (>= 4.1.0)
 Imports: 
+    cli,
     dplyr (>= 1.1.1),
     rlang
 Suggests:

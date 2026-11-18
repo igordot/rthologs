@@ -2,4 +2,8 @@
 
 export(orthologs)
 export(species)
+importFrom(cli,
+  cli_abort,
+  cli_warn
+)
 importFrom(rlang,.data)
