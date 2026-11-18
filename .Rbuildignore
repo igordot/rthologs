@@ -1,8 +1,9 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
-^[.]?air[.]toml$
 ^LICENSE\.md$
+^[.]?air[.]toml$
+^\.vscode$
 ^\.github$
 ^_pkgdown\.yml$
 ^AGENTS\.md$
