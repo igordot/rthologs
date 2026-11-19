@@ -36,10 +36,7 @@ on the species pair.}
 one matching pair.}
 }
 \value{
-A data frame with one row per distinct input and matching gene pair,
-in input order. With \code{orthologs_only = FALSE}, each distinct nonmissing
-input with no matching pair gets one row with its value in \code{input} and
-\code{NA} in all other columns.
+A data frame with one row per distinct input and matching gene pair.
 }
 \description{
 Find cross-species orthologs for a set of genes.
