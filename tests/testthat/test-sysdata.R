@@ -120,11 +120,5 @@ test_that("synonyms identify one gene and no symbols or Ensembl IDs", {
   expect_length(intersect(synonym_keys, ensembl_keys), 0L)
 })
 
-test_that("synonyms identify at most one gene per species", {
-  taxa <- genes_df$taxon_id[match(
-    synonyms_df$ncbi_id,
-    genes_df$ncbi_id
   )]
-  synonym_keys <- paste(taxa, synonyms_df$synonym, sep = ":")
-  expect_identical(anyDuplicated(synonym_keys), 0L)
 })

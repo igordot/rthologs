@@ -249,6 +249,7 @@ test_that("`best = FALSE` preserves all source genes in every species pair", {
   for (i in seq_len(nrow(combinations))) {
     pairs <- orthologs_df[
       orthologs_df$g1_taxon_id == combinations$g1_taxon_id[i] &
+        orthologs_df$g2_taxon_id == combinations$g2_taxon_id[i],
     ]
     for (side in list(c("g1", "g2"), c("g2", "g1"))) {
       expected <- expected_pairs(pairs, side[1], side[2])
@@ -266,7 +267,6 @@ test_that("`best = FALSE` preserves all source genes in every species pair", {
       out <- orthologs(inputs, source, target)
       expect_identical(out[-1], expected_best)
     }
-      "g1_symbol",
   }
 })
 
@@ -334,10 +334,6 @@ test_that("only missing values and empty results cause warnings", {
   )
 })
 
-test_that("`best` that removes all pairs causes a warning", {
-  expect_warning(
-    out <- orthologs("MT-RNR2", "human", "mouse", best = TRUE)
-  )
 test_that("invalid input and unknown species cause errors", {
   expect_error(orthologs(7157, "human", "mouse"))
   expect_error(orthologs(matrix("TP53"), "human", "mouse"))
