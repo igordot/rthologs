@@ -8,5 +8,6 @@
 ^docs$
 ^pkgdown$
 ^_pkgdown\.yml$
+^vignettes/articles$
 ^AGENTS\.md$
 ^\.remember$

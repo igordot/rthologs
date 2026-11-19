@@ -1,0 +1,153 @@
+---
+title: "Get started with rthologs"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+rthologs looks up cross-species gene orthologs and returns a tidy R data frame.
+
+## Installation
+
+Install the development version from GitHub with pak.
+If you need pak, run `install.packages("pak")` first.
+
+```{r, eval = FALSE}
+pak::pak("igordot/rthologs")
+```
+
+Load rthologs to run the examples.
+
+```{r setup}
+library(rthologs)
+```
+
+## Species
+
+Use `species()` to list the available species and their accepted names.
+
+```{r}
+species()
+```
+
+## Orthologs
+
+Use `orthologs()` to find the orthologs of a set of genes.
+Give the genes, the source species of the genes, and the target species.
+
+```{r}
+result <- orthologs("TP53", source = "human", target = "mouse")
+dplyr::glimpse(result)
+```
+
+The result is a standard data frame with one row for each input and matching gene pair.
+The `source_` columns identify the input gene.
+The `target_` columns identify the ortholog.
+The `support` column lists the sources that support the pair and the `support_n` column gives the number of these sources.
+
+The source and target can be any two species in the package.
+
+```{r}
+result <- orthologs("Trp53", source = "mouse", target = "rat")
+dplyr::glimpse(result)
+```
+
+### Input genes
+
+The input can be gene symbols, NCBI IDs, or Ensembl IDs.
+Inputs are case-sensitive and you can mix the input types in one vector.
+
+```{r}
+genes <- c("TP53", "7157", "ENSG00000141510")
+result <- orthologs(genes, source = "human", target = "mouse")
+result[, c("input", "source_symbol", "target_symbol")]
+```
+
+An input with no direct match can match a gene synonym.
+Synonyms include previous symbols, such as `CTGF` for `CCN2`.
+To use only the primary names, set `synonyms = FALSE`.
+
+```{r}
+genes <- c("CTGF", "SEPT7")
+result <- orthologs(genes, source = "human", target = "mouse")
+result[, c("input", "source_symbol", "target_symbol")]
+```
+
+### Multiple matches
+
+An input can have more than one ortholog.
+Each ortholog gets its own row.
+
+```{r}
+genes <- c("Ptprc", "Hba-a1", "Gapdh")
+result <- orthologs(genes, source = "mouse", target = "zebrafish")
+result[, c("input", "target_symbol", "support_n")]
+```
+
+By default, the result includes only the best matches.
+To get all the orthologs in the data, set `best = FALSE`.
+
+```{r}
+result <- orthologs(
+  "Hba-a1",
+  source = "mouse",
+  target = "zebrafish",
+  best = FALSE
+)
+result[, c("input", "target_symbol", "support_n")]
+```
+
+To keep only the pairs with more support, set `min_support`.
+
+```{r}
+result <- orthologs(
+  "Hba-a1",
+  source = "mouse",
+  target = "zebrafish",
+  best = FALSE,
+  min_support = 6
+)
+result[, c("input", "target_symbol", "support_n")]
+```
+
+### Inputs without orthologs
+
+By default, the result does not include inputs with no orthologs.
+To keep these inputs, set `orthologs_only = FALSE`.
+Each of these inputs then gets one row with `NA` in all other columns.
+
+```{r}
+genes <- c("Ptprc", "Cd34", "Fakegene")
+result <- orthologs(
+  genes,
+  source = "mouse",
+  target = "zebrafish",
+  orthologs_only = FALSE
+)
+result[, c("input", "target_symbol")]
+```
+
+`Cd34` is a valid mouse gene, but the data contain no zebrafish ortholog for it.
+`Fakegene` is not a mouse gene.
+
+## Data
+
+The orthologs come from the [Alliance of Genome Resources](https://www.alliancegenome.org/) (AGR).
+AGR combines predictions from these sources: PANTHER, SonicParanoid, OrthoFinder, Ensembl Compara, OrthoInspector, InParanoid, PhylomeDB, OMA, Hieranoid, HGNC, and ZFIN.
+
+The package uses the AGR stringent set that includes:
+
+* Pairs that three or more methods support, with a best match in at least one direction.
+* Pairs that two methods support, with a best match in both directions.
+* All pairs from HGNC or ZFIN.
+
+The package includes the eight species that have orthologs with all other species in the data.
+
+If you use the data, please cite AGR:
+Alliance of Genome Resources Consortium.
+Updates to the Alliance of Genome Resources central infrastructure. *Genetics*. 2024.
+doi: [10.1093/genetics/iyae049](https://doi.org/10.1093/genetics/iyae049).

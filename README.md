@@ -5,7 +5,7 @@
 [![Codecov test coverage](https://codecov.io/gh/igordot/rthologs/graph/badge.svg)](https://app.codecov.io/gh/igordot/rthologs)
 <!-- badges: end -->
 
-rthologs maps genes to their orthologs in another species.
+rthologs maps genes to their orthologs in other species.
 
 * Supports common model organisms, including human, mouse, zebrafish, and fly.
 * Looks up genes by symbol, NCBI (Entrez) ID, or Ensembl ID.
@@ -30,4 +30,4 @@ rthologs::orthologs("TP53", source = "human", target = "mouse")
 
 Use `rthologs::species()` to list the accepted species names.
 
-See the [package documentation](https://igordot.github.io/rthologs/) for more details.
+See [Get started](https://igordot.github.io/rthologs/articles/rthologs.html) for more examples.
