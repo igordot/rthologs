@@ -13,6 +13,8 @@ Description: Genomic analysis frequently involves comparisons to human or
     The orthologs are sourced from the Alliance of Genome Resources (AGR)
     <doi:10.1093/genetics/iyae049>.
 License: MIT + file LICENSE
+URL: https://igordot.github.io/rthologs/
+BugReports: https://github.com/igordot/rthologs/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 

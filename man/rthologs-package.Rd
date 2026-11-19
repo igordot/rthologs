@@ -8,6 +8,14 @@
 \description{
 Genomic analysis frequently involves comparisons to human or mouse data. This requires harmonization of gene names into the same gene space. The 'rthologs' R package simplifies cross-species conversion and mapping between gene orthologs/homologs of common model organisms such as human, mouse, rat, zebrafish, and fly. It supports gene symbols, NCBI (Entrez) IDs, and Ensembl IDs, and works offline. The orthologs are sourced from the Alliance of Genome Resources (AGR) \doi{10.1093/genetics/iyae049}.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://igordot.github.io/rthologs/}
+  \item Report bugs at \url{https://github.com/igordot/rthologs/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Igor Dolgalev \email{igor.dolgalev@nyumc.org} (\href{https://orcid.org/0000-0003-4451-126X}{ORCID})
 
