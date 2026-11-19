@@ -86,7 +86,7 @@ orthologs <- function(
     unique(genes),
     source_taxon_id,
     target_taxon_id,
-    min_support[[1L]],
+    min_support,
     best,
     orthologs_df,
     genes_df,
@@ -115,9 +115,6 @@ lookup_orthologs <- function(
     pairs[[paste0(s, "_taxon_id")]] == source &
       pairs[[paste0(t, "_taxon_id")]] == target,
   ]
-  if (nrow(pairs) == 0L) {
-    cli_abort("No data are available for this species pair.")
-  }
   # Rename the stored gene 1 and gene 2 columns to source and target
   pairs <- data.frame(
     source_ncbi_id = pairs[[paste0(s, "_ncbi_id")]],
