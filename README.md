@@ -30,4 +30,4 @@ rthologs::orthologs("TP53", source = "human", target = "mouse")
 
 Use `rthologs::species()` to list the accepted species names.
 
-See [Get started](https://igordot.github.io/rthologs/articles/rthologs.html) for more examples.
+See the [vignette](https://igordot.github.io/rthologs/articles/rthologs.html) for more examples.

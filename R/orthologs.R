@@ -16,10 +16,7 @@
 #' @param orthologs_only If `TRUE` (default), keep only inputs with at least
 #'   one matching pair.
 #'
-#' @return A data frame with one row per distinct input and matching gene pair,
-#'   in input order. With `orthologs_only = FALSE`, each distinct nonmissing
-#'   input with no matching pair gets one row with its value in `input` and
-#'   `NA` in all other columns.
+#' @return A data frame with one row per distinct input and matching gene pair.
 #'
 #' @details
 #' The function uses each distinct input once.
