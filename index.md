@@ -31,6 +31,6 @@ Use
 [`rthologs::species()`](https://igordot.github.io/rthologs/reference/species.md)
 to list the accepted species names.
 
-See [Get
-started](https://igordot.github.io/rthologs/articles/rthologs.html) for
-more examples.
+See the
+[vignette](https://igordot.github.io/rthologs/articles/rthologs.html)
+for more examples.
