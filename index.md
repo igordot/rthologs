@@ -1,6 +1,6 @@
 # rthologs: Gene Orthologs for Model Organisms
 
-rthologs maps genes to their orthologs in another species.
+rthologs maps genes to their orthologs in other species.
 
 - Supports common model organisms, including human, mouse, zebrafish,
   and fly.
@@ -31,5 +31,6 @@ Use
 [`rthologs::species()`](https://igordot.github.io/rthologs/reference/species.md)
 to list the accepted species names.
 
-See the [package documentation](https://igordot.github.io/rthologs/) for
-more details.
+See [Get
+started](https://igordot.github.io/rthologs/articles/rthologs.html) for
+more examples.
