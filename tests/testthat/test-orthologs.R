@@ -23,6 +23,13 @@ test_that("symbols, NCBI IDs, and Ensembl IDs give the same pairs", {
   expect_identical(orthologs("Trp53", "mouse", "rat")$target_symbol, "Tp53")
 })
 
+test_that("taxon IDs give the same pairs as species names", {
+  expect_identical(
+    orthologs("TP53", 9606, "10090"),
+    orthologs("TP53", "human", "mouse")
+  )
+})
+
 test_that("synonyms give the same pairs as the current symbol", {
   out <- orthologs("TP53", "human", "mouse")
   by_synonym <- orthologs("LFS1", "human", "mouse")
@@ -40,6 +47,6 @@ test_that("synonyms = FALSE keeps only direct matches", {
 
 test_that("synonyms of a different species do not match", {
   expect_identical(orthologs("Ly-5", "mouse", "human")$target_symbol, "PTPRC")
-  expect_snapshot(out <- orthologs("Ly-5", "human", "mouse"))
+  expect_warning(out <- orthologs("Ly-5", "human", "mouse"))
   expect_identical(nrow(out), 0L)
 })

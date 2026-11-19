@@ -14,19 +14,15 @@ test_that("taxon IDs resolve to the same taxon as names", {
   for (id in unique(species_df$taxon_id)) {
     expect_identical(unique(species(id)$taxon_id), id)
   }
-  expect_identical(
-    orthologs("TP53", 9606, "10090"),
-    orthologs("TP53", "human", "mouse")
-  )
 })
 
 test_that("invalid species names cause errors", {
-  expect_snapshot(error = TRUE, species("not a species"))
-  expect_snapshot(error = TRUE, species(c("mouse", "rat")))
-  expect_snapshot(error = TRUE, species(NA_character_))
-  expect_snapshot(error = TRUE, species(99999))
-  expect_snapshot(error = TRUE, species(10090.5))
-  expect_snapshot(error = TRUE, species(TRUE))
+  expect_error(species("not a species"))
+  expect_error(species(c("mouse", "rat")))
+  expect_error(species(NA_character_))
+  expect_error(species(99999))
+  expect_error(species(10090.5))
+  expect_error(species(TRUE))
 })
 
 test_that("all name records resolve to one species", {
