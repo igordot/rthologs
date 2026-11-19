@@ -165,13 +165,13 @@ lookup_orthologs <- function(
   out <- data.frame(
     input = out$input,
     source_taxon_id = rep(source, nrow(out)),
+    source_symbol = gene_table$symbol[src],
     source_ncbi_id = as.character(out$source_ncbi_id),
     source_ensembl_id = gene_table$ensembl_id[src],
-    source_symbol = gene_table$symbol[src],
     target_taxon_id = rep(target, nrow(out)),
+    target_symbol = gene_table$symbol[tgt],
     target_ncbi_id = as.character(out$target_ncbi_id),
     target_ensembl_id = gene_table$ensembl_id[tgt],
-    target_symbol = gene_table$symbol[tgt],
     # The saved table stores the algorithms as a factor to save space
     support = as.character(out$support),
     support_n = out$support_n
