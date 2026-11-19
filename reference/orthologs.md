@@ -54,10 +54,7 @@ orthologs(
 
 ## Value
 
-A data frame with one row per distinct input and matching gene pair, in
-input order. With `orthologs_only = FALSE`, each distinct nonmissing
-input with no matching pair gets one row with its value in `input` and
-`NA` in all other columns.
+A data frame with one row per distinct input and matching gene pair.
 
 ## Details
 
