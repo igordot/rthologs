@@ -1,4 +1,4 @@
-#' rthologs: Gene Orthologs for Model Organisms in a Tidy Data Format
+#' rthologs: Gene Orthologs for Model Organisms
 #'
 #' @keywords internal
 "_PACKAGE"

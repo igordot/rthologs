@@ -1,5 +1,5 @@
 Package: rthologs
-Title: Gene Orthologs for Model Organisms in a Tidy Data Format
+Title: Gene Orthologs for Model Organisms
 Version: 0.0.0.9000
 Authors@R: 
     person("Igor", "Dolgalev", , "igor.dolgalev@nyumc.org", role = c("aut", "cre"),
