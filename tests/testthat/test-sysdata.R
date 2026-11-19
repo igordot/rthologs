@@ -120,5 +120,3 @@ test_that("synonyms identify one gene and no symbols or Ensembl IDs", {
   expect_length(intersect(synonym_keys, ensembl_keys), 0L)
 })
 
-  )]
-})
