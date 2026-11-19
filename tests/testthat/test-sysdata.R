@@ -67,3 +67,66 @@ test_that("genes with multiple AGR NCBI IDs get the ID with the matching symbol"
   rows <- match(names(expected), genes_df$agr_id)
   expect_identical(genes_df$ncbi_id[rows], unname(expected))
 })
+
+test_that("HGNC fills human genes without a single AGR Ensembl ID", {
+  # AAAS, AADACL2, ABCC1, CMAHP, AQP7P3
+  ids <- c("8086", "344752", "4363", "8418", "441432")
+  ens <- genes_df[match(ids, genes_df$ncbi_id), ]
+  expect_identical(
+    ens$ensembl_id,
+    c(
+      "ENSG00000094914",
+      "ENSG00000197953",
+      "ENSG00000103222",
+      "ENSG00000168405",
+      "ENSG00000279688"
+    )
+  )
+})
+
+# Bioconductor OrgDb gives another Ensembl ID for these human genes
+test_that("human genes with unconfirmed Ensembl IDs keep the current IDs", {
+  # FOLH1B, GABARAPL3, KLRC4-KLRK1, OR4Q2
+  ids <- c(219595L, 23766L, 100528032L, 390432L)
+  genes <- genes_df[match(ids, genes_df$ncbi_id), ]
+  expect_identical(
+    genes$ensembl_id,
+    c(
+      "ENSG00000134612",
+      "ENSG00000238244",
+      "ENSG00000255819",
+      "ENSG00000196383"
+    )
+  )
+})
+
+test_that("Ensembl and NCBI select among multiple AGR Ensembl IDs", {
+  # Rat Rps10-ps22: AGR lists two IDs, and only one is in the Ensembl GTF file
+  ens <- genes_df[genes_df$ncbi_id == "299823", ]
+  expect_identical(ens$ensembl_id, "ENSRNOG00000049099")
+  # Mouse Slc60a2-ps2: both AGR IDs are in the GTF file, and NCBI lists one
+  ens <- genes_df[genes_df$ncbi_id == "100041085", ]
+  expect_identical(ens$ensembl_id, "ENSMUSG00000121339")
+})
+
+test_that("synonyms do not duplicate symbols or Ensembl IDs in a species", {
+  taxa <- genes_df$taxon_id[match(
+    synonyms_df$ncbi_id,
+    genes_df$ncbi_id
+  )]
+  synonym_keys <- paste(taxa, synonyms_df$synonym, sep = ":")
+  symbol_keys <- paste(genes_df$taxon_id, genes_df$symbol, sep = ":")
+  ensembl <- genes_df[!is.na(genes_df$ensembl_id), ]
+  ensembl_keys <- paste(ensembl$taxon_id, ensembl$ensembl_id, sep = ":")
+  expect_length(intersect(synonym_keys, symbol_keys), 0L)
+  expect_length(intersect(synonym_keys, ensembl_keys), 0L)
+})
+
+test_that("synonyms identify at most one gene per species", {
+  taxa <- genes_df$taxon_id[match(
+    synonyms_df$ncbi_id,
+    genes_df$ncbi_id
+  )]
+  synonym_keys <- paste(taxa, synonyms_df$synonym, sep = ":")
+  expect_identical(anyDuplicated(synonym_keys), 0L)
+})
