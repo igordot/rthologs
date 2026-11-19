@@ -10,12 +10,11 @@
 Source:
 [`DESCRIPTION`](https://github.com/igordot/rthologs/blob/main/DESCRIPTION)
 
-Dolgalev I (2026). *rthologs: Gene Orthologs for Model Organisms in a
-Tidy Data Format*. R package version 0.0.0.9000,
-<https://igordot.github.io/rthologs/>.
+Dolgalev I (2026). *rthologs: Gene Orthologs for Model Organisms*. R
+package version 0.0.0.9000, <https://igordot.github.io/rthologs/>.
 
     @Manual{,
-      title = {rthologs: Gene Orthologs for Model Organisms in a Tidy Data Format},
+      title = {rthologs: Gene Orthologs for Model Organisms},
       author = {Igor Dolgalev},
       year = {2026},
       note = {R package version 0.0.0.9000},

@@ -1,4 +1,4 @@
-# rthologs: Gene Orthologs for Model Organisms in a Tidy Data Format
+# rthologs: Gene Orthologs for Model Organisms
 
 Genomic analysis frequently involves comparisons to human or mouse data.
 This requires harmonization of gene names into the same gene space. The
