@@ -48,7 +48,7 @@ test_that("Ensembl IDs are single values or missing", {
 })
 
 test_that("NCBI and Ensembl fill missing identifiers", {
-  expect_true(all(c(553997L, 100150068L, 101884914L) %in% genes_df$ncbi_id))
+  expect_true(553997L %in% genes_df$ncbi_id)
   gene <- genes_df[genes_df$ncbi_id == 101884914L, ]
   expect_identical(gene$ensembl_id, "ENSDARG00000097875")
   gene <- genes_df[genes_df$ncbi_id == 100150068L, ]
@@ -102,22 +102,20 @@ test_that("human genes with unconfirmed Ensembl IDs keep the current IDs", {
 
 test_that("Ensembl and NCBI select among multiple AGR Ensembl IDs", {
   # Rat Rps10-ps22: AGR lists two IDs, and only one is in the Ensembl GTF file
-  ens <- genes_df[genes_df$ncbi_id == "299823", ]
+  ens <- genes_df[genes_df$ncbi_id == 299823L, ]
   expect_identical(ens$ensembl_id, "ENSRNOG00000049099")
   # Mouse Slc60a2-ps2: both AGR IDs are in the GTF file, and NCBI lists one
-  ens <- genes_df[genes_df$ncbi_id == "100041085", ]
+  ens <- genes_df[genes_df$ncbi_id == 100041085L, ]
   expect_identical(ens$ensembl_id, "ENSMUSG00000121339")
 })
 
-test_that("synonyms do not duplicate symbols or Ensembl IDs in a species", {
-  taxa <- genes_df$taxon_id[match(
-    synonyms_df$ncbi_id,
-    genes_df$ncbi_id
-  )]
+test_that("synonyms identify one gene and no symbols or Ensembl IDs", {
+  taxa <- genes_df$taxon_id[match(synonyms_df$ncbi_id, genes_df$ncbi_id)]
   synonym_keys <- paste(taxa, synonyms_df$synonym, sep = ":")
   symbol_keys <- paste(genes_df$taxon_id, genes_df$symbol, sep = ":")
   ensembl <- genes_df[!is.na(genes_df$ensembl_id), ]
   ensembl_keys <- paste(ensembl$taxon_id, ensembl$ensembl_id, sep = ":")
+  expect_identical(anyDuplicated(synonym_keys), 0L)
   expect_length(intersect(synonym_keys, symbol_keys), 0L)
   expect_length(intersect(synonym_keys, ensembl_keys), 0L)
 })

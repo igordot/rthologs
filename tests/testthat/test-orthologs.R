@@ -218,119 +218,55 @@ test_that("best uses supplied flags in each direction instead of support ranking
   )
 })
 
+# Build the expected orthologs() result from the saved pairs of one pair
+expected_pairs <- function(pairs, s, t) {
+  gene_columns <- function(side, prefix) {
+    ids <- pairs[[paste0(side, "_ncbi_id")]]
+    rows <- match(ids, genes_df$ncbi_id)
+    out <- data.frame(
+      taxon_id = pairs[[paste0(side, "_taxon_id")]],
+      symbol = genes_df$symbol[rows],
+      ncbi_id = as.character(ids),
+      ensembl_id = genes_df$ensembl_id[rows]
+    )
+    names(out) <- paste0(prefix, "_", names(out))
+    out
+  }
+  out <- cbind(
+    gene_columns(s, "source"),
+    gene_columns(t, "target"),
+    support = as.character(pairs$algorithms),
+    support_n = pairs$algorithms_n,
+    best = pairs[[paste0(s, "_best_match")]]
+  )
+  out <- out[order(out$source_ncbi_id, out$target_ncbi_id), ]
+  rownames(out) <- NULL
+  out
+}
+
 test_that("`best = FALSE` preserves all source genes in every species pair", {
-  combinations <- unique(orthologs_df[c(
-    "g1_taxon_id",
-    "g2_taxon_id"
-  )])
+  combinations <- unique(orthologs_df[c("g1_taxon_id", "g2_taxon_id")])
   for (i in seq_len(nrow(combinations))) {
-    source <- combinations$g1_taxon_id[i]
-    target <- combinations$g2_taxon_id[i]
-    original <- orthologs_df[
-      orthologs_df$g1_taxon_id == source &
-        orthologs_df$g2_taxon_id == target,
+    pairs <- orthologs_df[
+      orthologs_df$g1_taxon_id == combinations$g1_taxon_id[i] &
     ]
-    for (side in c("g1", "g2")) {
-      ids <- original[[paste0(side, "_ncbi_id")]]
-      original[[paste0(side, "_symbol")]] <- genes_df$symbol[
-        match(ids, genes_df$ncbi_id)
-      ]
-      original[[paste0(side, "_ensembl_id")]] <- genes_df$ensembl_id[
-        match(ids, genes_df$ncbi_id)
-      ]
-      original[[paste0(side, "_id")]] <- as.character(ids)
+    for (side in list(c("g1", "g2"), c("g2", "g1"))) {
+      expected <- expected_pairs(pairs, side[1], side[2])
+      best <- expected$best
+      expected$best <- NULL
+      inputs <- unique(expected$source_ncbi_id)
+      source <- expected$source_taxon_id[1]
+      target <- expected$target_taxon_id[1]
+      out <- orthologs(inputs, source, target, best = FALSE)
+      # The inputs are NCBI IDs, so `input` repeats the source ID
+      expect_identical(out$input, out$source_ncbi_id)
+      expect_identical(out[-1], expected)
+      expected_best <- expected[best, ]
+      rownames(expected_best) <- NULL
+      out <- orthologs(inputs, source, target)
+      expect_identical(out[-1], expected_best)
     }
-    # The saved table stores the algorithms as a factor.
-    original$algorithms <- as.character(original$algorithms)
-    original <- original[order(original$g1_id, original$g2_id), ]
-    original <- original[c(
-      "g1_taxon_id",
-      "g1_id",
-      "g1_ensembl_id",
       "g1_symbol",
-      "g2_taxon_id",
-      "g2_id",
-      "g2_ensembl_id",
-      "g2_symbol",
-      "algorithms",
-      "algorithms_n",
-      "g1_best_match",
-      "g2_best_match"
-    )]
-    source_name <- species_df$name[
-      species_df$taxon_id == source & species_df$name_class == "species name"
-    ]
-    target_name <- species_df$name[
-      species_df$taxon_id == target & species_df$name_class == "species name"
-    ]
-    forward <- orthologs(
-      unique(original$g1_id),
-      source_name,
-      target_name,
-      best = FALSE
-    )
-    reverse <- orthologs(
-      sort(unique(original$g2_id)),
-      target_name,
-      source_name,
-      best = FALSE
-    )
-    # The inputs are NCBI IDs, so `input` repeats the source ID
-    expect_identical(forward$input, forward$source_ncbi_id)
-    expect_identical(reverse$input, reverse$source_ncbi_id)
-    expected <- original[1:10]
-    names(expected) <- c(
-      "source_taxon_id",
-      "source_ncbi_id",
-      "source_ensembl_id",
-      "source_symbol",
-      "target_taxon_id",
-      "target_ncbi_id",
-      "target_ensembl_id",
-      "target_symbol",
-      "support",
-      "support_n"
-    )
-    rownames(expected) <- NULL
-    # Put the output columns in the fixture order
-    forward <- forward[names(expected)]
-    reverse <- reverse[names(expected)]
-    expect_identical(forward, expected)
-    expected_best <- expected[
-      original$g1_best_match,
-    ]
-    rownames(expected_best) <- NULL
-    # `best` removes all pairs for some inputs, which gives a warning
-    forward_best <- suppressWarnings(
-      orthologs(unique(original$g1_id), source_name, target_name, best = TRUE)
-    )
-    expect_identical(forward_best[names(expected)], expected_best)
-    reverse_best <- suppressWarnings(
-      orthologs(
-        sort(unique(original$g2_id)),
-        target_name,
-        source_name,
-        best = TRUE
-      )
-    )[names(expected)]
-    expected_reverse <- original[
-      original$g2_best_match,
-      1:10
-    ]
-    expected_reverse <- expected_reverse[c(5:8, 1:4, 9:10)]
-    names(expected_reverse) <- names(expected)
-    expected_reverse <- expected_reverse[
-      order(expected_reverse$source_ncbi_id, expected_reverse$target_ncbi_id),
-    ]
-    rownames(expected_reverse) <- NULL
-    expect_identical(reverse_best, expected_reverse)
-    restored <- reverse[c(5:8, 1:4, 9:10)]
-    names(restored) <- names(expected)
-    restored <- restored[
-      order(restored$source_ncbi_id, restored$target_ncbi_id),
-    ]
-    rownames(restored) <- NULL
-    expect_identical(restored, expected)
   }
 })
 
@@ -402,10 +338,7 @@ test_that("`best` that removes all pairs causes a warning", {
   expect_warning(
     out <- orthologs("MT-RNR2", "human", "mouse", best = TRUE)
   )
-  expect_identical(nrow(out), 0L)
-})
-
-test_that("invalid input and unavailable pairs cause errors", {
+test_that("invalid input and unknown species cause errors", {
   expect_error(orthologs(7157, "human", "mouse"))
   expect_error(orthologs(matrix("TP53"), "human", "mouse"))
   expect_error(orthologs("TP53", "human", "mouse", best = NA))

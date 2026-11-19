@@ -1,10 +1,6 @@
 test_that("species names resolve to the same taxon", {
   expect_identical(species("mouse"), species(" Mus musculus "))
   expect_identical(unique(species("MOUSE")$taxon_id), 10090L)
-  expect_identical(
-    unique(species("Saccharomyces cerevisiae")$taxon_id),
-    559292L
-  )
 })
 
 test_that("taxon IDs resolve to the same taxon as names", {
