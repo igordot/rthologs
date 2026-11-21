@@ -25,14 +25,6 @@ Load rthologs to run the examples.
 library(rthologs)
 ```
 
-## Species
-
-Use `species()` to list the available species and their accepted names.
-
-```{r}
-species()
-```
-
 ## Orthologs
 
 Use `orthologs()` to find the orthologs of a set of genes.
@@ -141,6 +133,14 @@ Genes without orthologs get one row with `NA` in all columns.
 `Cd34` is a valid mouse gene, but the data contain no zebrafish ortholog for it.
 `Fakegene` is not a mouse gene.
 
+## Species
+
+Use `species()` to list the available species and their accepted names.
+
+```{r}
+species()
+```
+
 ## Data
 
 The orthologs come from the [Alliance of Genome Resources](https://www.alliancegenome.org/) (AGR).
@@ -152,9 +152,7 @@ The package uses the AGR stringent set that includes:
 * Pairs that two methods support, with a best match in both directions.
 * All pairs from HGNC or ZFIN.
 
-The package includes the eight species that have orthologs with all other species in the data.
-
-If you use the data, please cite AGR:
+If you use the data, please cite:
 Alliance of Genome Resources Consortium.
 Updates to the Alliance of Genome Resources central infrastructure. *Genetics*. 2024.
 doi: [10.1093/genetics/iyae049](https://doi.org/10.1093/genetics/iyae049).
