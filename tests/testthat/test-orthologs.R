@@ -1,26 +1,39 @@
 test_that("symbols, NCBI IDs, and Ensembl IDs give the same pairs", {
-  out <- orthologs("TP53", source = "human", target = "mouse")
+  out <- orthologs("TP53", source = "human", target = "mouse", details = TRUE)
   expect_identical(out$input, "TP53")
   expect_identical(out$target_symbol, "Trp53")
   expect_identical(out$source_ensembl_id, "ENSG00000141510")
   expect_identical(out$target_ensembl_id, "ENSMUSG00000059552")
   for (input in c("7157", "ENSG00000141510")) {
-    by_id <- orthologs(input, "human", "mouse")
+    by_id <- orthologs(input, "human", "mouse", details = TRUE)
     expect_identical(by_id$input, input)
     expect_identical(by_id[-1], out[-1])
   }
+  # Numbers are searched as text
+  by_id <- orthologs("7157", "human", "mouse")
+  expect_identical(orthologs(7157L, "human", "mouse"), by_id)
+  expect_identical(orthologs(7157, "human", "mouse"), by_id)
   # Each different input gets one row
   all <- orthologs(
     c("TP53", "7157", "ENSG00000141510", "TP53"),
     "human",
-    "mouse"
+    "mouse",
+    details = TRUE
   )
   expect_identical(all$input, c("TP53", "7157", "ENSG00000141510"))
   expect_identical(unique(all[-1]), out[-1])
-  reverse <- orthologs("Trp53", "mouse", "human")
+  reverse <- orthologs("Trp53", "mouse", "human", details = TRUE)
   expect_identical(reverse$target_ncbi_id, out$source_ncbi_id)
   expect_identical(reverse$source_ncbi_id, out$target_ncbi_id)
   expect_identical(orthologs("Trp53", "mouse", "rat")$target_symbol, "Tp53")
+})
+
+test_that("numeric NCBI IDs match when R prints them in scientific notation", {
+  expected <- orthologs("500000", "rat", "human")
+  expect_identical(expected$source_symbol, "Cldn12")
+  expect_identical(expected$target_symbol, "CLDN12")
+  expect_identical(orthologs(500000, "rat", "human"), expected)
+  expect_identical(orthologs(500000L, "rat", "human"), expected)
 })
 
 test_that("taxon IDs give the same pairs as species names", {
@@ -40,7 +53,12 @@ test_that("synonyms give the same pairs as the current symbol", {
 
 test_that("synonyms = FALSE keeps only direct matches", {
   expect_no_warning(
-    out <- orthologs(c("PTPRC", "LFS1"), "human", "mouse", synonyms = FALSE)
+    out <- orthologs(
+      c("PTPRC", "LFS1"),
+      "human",
+      "mouse",
+      synonyms = FALSE
+    )
   )
   expect_identical(out$source_symbol, "PTPRC")
 })
@@ -53,7 +71,7 @@ test_that("synonyms of a different species do not match", {
 
 test_that("synonyms do not match other symbols in another case", {
   # Each input is a synonym of a different gene than the one with that symbol
-  mouse <- c(
+  mm <- c(
     "FAS",
     "EPO",
     "SLC7A1",
@@ -66,7 +84,7 @@ test_that("synonyms do not match other symbols in another case", {
     "DCC"
   )
   expect_warning(
-    out <- orthologs(mouse, "mouse", "human")
+    out <- orthologs(mm, "mouse", "human")
   )
   expect_identical(nrow(out), 0L)
   expect_warning(
@@ -93,12 +111,12 @@ test_that("the five marker genes return their mouse orthologs", {
 })
 
 test_that("PTPRC has the expected rat and zebrafish genes", {
-  rat <- orthologs("PTPRC", "human", "rat")
-  expect_identical(rat$target_ncbi_id, "24699")
-  expect_identical(rat$target_symbol, "Ptprc")
-  zebrafish <- orthologs("PTPRC", "human", "zebrafish")
-  expect_identical(zebrafish$target_ncbi_id, "559154")
-  expect_identical(zebrafish$target_symbol, "ptprc")
+  rn <- orthologs("PTPRC", "human", "rat")
+  expect_identical(rn$target_ncbi_id, "24699")
+  expect_identical(rn$target_symbol, "Ptprc")
+  dr <- orthologs("PTPRC", "human", "zebrafish")
+  expect_identical(dr$target_ncbi_id, "559154")
+  expect_identical(dr$target_symbol, "ptprc")
   # A pair without a human gene
   expect_identical(orthologs("Ptprc", "mouse", "rat")$target_ncbi_id, "24699")
   expect_identical(orthologs("Ptprc", "rat", "mouse")$target_ncbi_id, "19264")
@@ -125,7 +143,7 @@ test_that("known difficult genes give the expected pairs", {
     lilrb3 <- orthologs("LILRB3", "human", "mouse")
   )
   expect_identical(nrow(lilrb3), 0L)
-  lilrb3 <- orthologs("LILRB3", "human", "rat")
+  lilrb3 <- orthologs("LILRB3", "human", "rat", details = TRUE)
   expect_identical(lilrb3$target_symbol, "Pirb")
   expect_identical(lilrb3$support_n, 1L)
   # Rat Pals1: the newer Ensembl files give this Ensembl ID the name MPP5
@@ -134,11 +152,12 @@ test_that("known difficult genes give the expected pairs", {
   expect_identical(pals1$target_symbol, "PALS1")
   # Fly 14-3-3 epsilon: the symbol has the Greek letter, written as ε
   # Some sources write 14-3-3epsilon, which is a synonym
-  fly <- "Drosophila melanogaster"
-  greek <- orthologs("14-3-3ε", fly, "human")
+  dm <- "Drosophila melanogaster"
+  greek <- orthologs("14-3-3ε", dm, "human", details = TRUE)
   expect_identical(greek$source_ncbi_id, "42186")
   expect_identical(greek$target_symbol, "YWHAE")
-  expect_identical(orthologs("14-3-3epsilon", fly, "human")[-1], greek[-1])
+  epsilon <- orthologs("14-3-3epsilon", dm, "human", details = TRUE)
+  expect_identical(epsilon[-1], greek[-1])
   # TAS2R43 and TAS2R45 have the same Ensembl ID
   # AGR gives it for TAS2R45 and HGNC gives it for TAS2R43
   shared <- orthologs("ENSG00000255374", "human", "mouse")
@@ -146,12 +165,15 @@ test_that("known difficult genes give the expected pairs", {
   expect_identical(shared$target_symbol, rep("Tas2r120", 2))
 })
 
-test_that("BGLAP keeps all three mouse matches with equal best scores", {
-  out <- orthologs("BGLAP", "human", "mouse")
+test_that("BGLAP keeps three equal best mouse matches", {
+  out <- orthologs("BGLAP", "human", "mouse", details = TRUE)
   expect_identical(out$target_ncbi_id, c("12095", "12096", "12097"))
   expect_identical(out$target_symbol, c("Bglap3", "Bglap", "Bglap2"))
   expect_identical(out$support_n, rep(10L, 3))
-  expect_identical(out, orthologs("BGLAP", "human", "mouse", best = FALSE))
+  expect_identical(
+    out,
+    orthologs("BGLAP", "human", "mouse", best = FALSE, details = TRUE)
+  )
 })
 
 test_that("SYCP3 has one mouse match by default and 76 without best", {
@@ -164,7 +186,7 @@ test_that("SYCP3 has one mouse match by default and 76 without best", {
 })
 
 test_that("GAPDH filters remove mouse matches with lower support", {
-  out <- orthologs("GAPDH", "human", "mouse", best = FALSE)
+  out <- orthologs("GAPDH", "human", "mouse", best = FALSE, details = TRUE)
   expect_identical(out$target_ncbi_id, c("100039229", "100042427", "14433"))
   expect_identical(out$target_symbol, c("Gapdhrt2", "Gapdhrt", "Gapdh"))
   expect_identical(out$support_n, c(9L, 9L, 10L))
@@ -176,11 +198,18 @@ test_that("GAPDH filters remove mouse matches with lower support", {
   )
   expect_identical(
     out,
-    orthologs("GAPDH", "human", "mouse", min_support = 9, best = FALSE)
+    orthologs(
+      "GAPDH",
+      "human",
+      "mouse",
+      min_support = 9,
+      best = FALSE,
+      details = TRUE
+    )
   )
 })
 
-test_that("best uses supplied flags in each direction instead of support ranking", {
+test_that("`best` uses the stored best-match flags, not support", {
   pairs <- data.frame(
     g1_taxon_id = 1L,
     g1_ncbi_id = c("A", "A", "A", "B", "C"),
@@ -244,7 +273,7 @@ expected_pairs <- function(pairs, s, t) {
   out
 }
 
-test_that("`best = FALSE` preserves all source genes in every species pair", {
+test_that("`best` gives the stored pairs for every species pair", {
   combinations <- unique(orthologs_df[c("g1_taxon_id", "g2_taxon_id")])
   for (i in seq_len(nrow(combinations))) {
     pairs <- orthologs_df[
@@ -258,19 +287,19 @@ test_that("`best = FALSE` preserves all source genes in every species pair", {
       inputs <- unique(expected$source_ncbi_id)
       source <- expected$source_taxon_id[1]
       target <- expected$target_taxon_id[1]
-      out <- orthologs(inputs, source, target, best = FALSE)
+      out <- orthologs(inputs, source, target, best = FALSE, details = TRUE)
       # The inputs are NCBI IDs, so `input` repeats the source ID
       expect_identical(out$input, out$source_ncbi_id)
       expect_identical(out[-1], expected)
       expected_best <- expected[best, ]
       rownames(expected_best) <- NULL
-      out <- orthologs(inputs, source, target)
+      out <- orthologs(inputs, source, target, details = TRUE)
       expect_identical(out[-1], expected_best)
     }
   }
 })
 
-test_that("`orthologs_only = FALSE` gives inputs without orthologs one row of NA", {
+test_that("`orthologs_only = FALSE` keeps inputs without orthologs", {
   out <- orthologs(c("NOTAGENE", "TP53"), "human", "mouse")
   kept <- orthologs(
     c("NOTAGENE", "TP53"),
@@ -317,6 +346,17 @@ test_that("only missing values and empty results cause warnings", {
   expect_no_warning(empty <- orthologs(character(), "human", "mouse"))
   expect_identical(out, empty)
   expect_identical(
+    names(empty),
+    c(
+      "input",
+      "source_symbol",
+      "target_symbol",
+      "target_ncbi_id",
+      "target_ensembl_id"
+    )
+  )
+  empty <- orthologs(character(), "human", "mouse", details = TRUE)
+  expect_identical(
     vapply(empty, typeof, character(1)),
     c(
       input = "character",
@@ -335,7 +375,7 @@ test_that("only missing values and empty results cause warnings", {
 })
 
 test_that("invalid input and unknown species cause errors", {
-  expect_error(orthologs(7157, "human", "mouse"))
+  expect_error(orthologs(list("TP53"), "human", "mouse"))
   expect_error(orthologs(matrix("TP53"), "human", "mouse"))
   expect_error(orthologs("TP53", "human", "mouse", best = NA))
   expect_error(orthologs("TP53", "human", "mouse", best = c(TRUE, FALSE)))
@@ -343,6 +383,7 @@ test_that("invalid input and unknown species cause errors", {
   expect_error(orthologs("TP53", "human", "mouse", min_support = 0))
   expect_error(orthologs("TP53", "human", "mouse", synonyms = NA))
   expect_error(orthologs("TP53", "human", "mouse", orthologs_only = NA))
+  expect_error(orthologs("TP53", "human", "mouse", details = NA))
   expect_error(orthologs("TP53", NULL, "mouse"))
   expect_error(orthologs("TP53", "human", "human"))
   expect_error(orthologs("Trp53", "mouse", "Xenopus laevis"))

@@ -1,4 +1,4 @@
-test_that("supported species exclude X. laevis and have every species pair", {
+test_that("species exclude X. laevis and have every species pair", {
   taxa <- sort(unique(species_df$taxon_id))
   expect_identical(
     taxa,
@@ -11,7 +11,7 @@ test_that("supported species exclude X. laevis and have every species pair", {
   expect_false(8355L %in% genes_df$taxon_id)
 })
 
-test_that("internal best-score flags are logical without missing values", {
+test_that("best-match flags are logical with no NA", {
   expect_type(orthologs_df$g1_best_match, "logical")
   expect_type(orthologs_df$g2_best_match, "logical")
   expect_identical(
@@ -57,7 +57,7 @@ test_that("NCBI and Ensembl fill missing identifiers", {
   expect_identical(gene$ensembl_id, "YGR132C")
 })
 
-test_that("genes with multiple AGR NCBI IDs get the ID with the matching symbol", {
+test_that("genes with multiple AGR NCBI IDs get the ID for their symbol", {
   expected <- c(
     "SGD:S000005659" = 854301L,
     "SGD:S000002793" = 851993L,
@@ -85,7 +85,7 @@ test_that("HGNC fills human genes without a single AGR Ensembl ID", {
 })
 
 # Bioconductor OrgDb gives another Ensembl ID for these human genes
-test_that("human genes with unconfirmed Ensembl IDs keep the current IDs", {
+test_that("human genes keep their Ensembl IDs when OrgDb differs", {
   # FOLH1B, GABARAPL3, KLRC4-KLRK1, OR4Q2
   ids <- c(219595L, 23766L, 100528032L, 390432L)
   genes <- genes_df[match(ids, genes_df$ncbi_id), ]

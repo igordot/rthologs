@@ -7,9 +7,6 @@ test_that("taxon IDs resolve to the same taxon as names", {
   expect_identical(species(10090), species("mouse"))
   expect_identical(species(10090L), species("mouse"))
   expect_identical(species(" 10090 "), species("mouse"))
-  for (id in unique(species_df$taxon_id)) {
-    expect_identical(unique(species(id)$taxon_id), id)
-  }
 })
 
 test_that("invalid species names cause errors", {
@@ -21,9 +18,20 @@ test_that("invalid species names cause errors", {
   expect_error(species(TRUE))
 })
 
+test_that("species() returns the complete catalog", {
+  catalog <- species()
+  expect_named(catalog, c("taxon_id", "name", "name_class"))
+  taxa <- c(6239L, 7227L, 7955L, 8364L, 9606L, 10090L, 10116L, 559292L)
+  expect_setequal(unique(catalog$taxon_id), taxa)
+  for (id in taxa) {
+    listed <- catalog[catalog$taxon_id == id, ]
+    expect_gte(nrow(listed), 2L)
+    expect_true(dplyr::setequal(listed, species(id)), info = as.character(id))
+  }
+})
+
 test_that("all name records resolve to one species", {
-  expect_named(species(), c("taxon_id", "name", "name_class"))
-  records <- unique(species_df[c("taxon_id", "name")])
+  records <- unique(species()[c("taxon_id", "name")])
   for (i in seq_len(nrow(records))) {
     expect_identical(
       unique(species(records$name[i])$taxon_id),
