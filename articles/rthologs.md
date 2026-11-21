@@ -19,48 +19,6 @@ Load rthologs to run the examples.
 library(rthologs)
 ```
 
-## Species
-
-Use
-[`species()`](https://igordot.github.io/rthologs/reference/species.md)
-to list the available species and their accepted names.
-
-``` r
-
-species()
-#>    taxon_id                           name          name_class
-#> 1      6239         Caenorhabditis elegans     scientific name
-#> 2      6239         Caenorhabditis elegans        species name
-#> 3      7227        Drosophila melanogaster     scientific name
-#> 4      7227        Drosophila melanogaster        species name
-#> 5      7227                      fruit fly genbank common name
-#> 6      7955                    Danio rerio     scientific name
-#> 7      7955                    Danio rerio        species name
-#> 8      7955                  leopard danio         common name
-#> 9      7955                    zebra danio         common name
-#> 10     7955                     zebra fish         common name
-#> 11     7955                      zebrafish genbank common name
-#> 12     8364             Xenopus tropicalis     scientific name
-#> 13     8364             Xenopus tropicalis        species name
-#> 14     8364           tropical clawed frog genbank common name
-#> 15     8364            western clawed frog         common name
-#> 16     9606                   Homo sapiens     scientific name
-#> 17     9606                   Homo sapiens        species name
-#> 18     9606                          human genbank common name
-#> 19    10090                   Mus musculus     scientific name
-#> 20    10090                   Mus musculus        species name
-#> 21    10090                    house mouse genbank common name
-#> 22    10090                          mouse         common name
-#> 23    10116                     Norway rat genbank common name
-#> 24    10116              Rattus norvegicus     scientific name
-#> 25    10116              Rattus norvegicus        species name
-#> 26    10116                      brown rat         common name
-#> 27    10116                            rat         common name
-#> 28    10116                           rats         common name
-#> 29   559292       Saccharomyces cerevisiae        species name
-#> 30   559292 Saccharomyces cerevisiae S288C     scientific name
-```
-
 ## Orthologs
 
 Use
@@ -226,6 +184,48 @@ Genes without orthologs get one row with `NA` in all columns. `Cd34` is
 a valid mouse gene, but the data contain no zebrafish ortholog for it.
 `Fakegene` is not a mouse gene.
 
+## Species
+
+Use
+[`species()`](https://igordot.github.io/rthologs/reference/species.md)
+to list the available species and their accepted names.
+
+``` r
+
+species()
+#>    taxon_id                           name          name_class
+#> 1      6239         Caenorhabditis elegans     scientific name
+#> 2      6239         Caenorhabditis elegans        species name
+#> 3      7227        Drosophila melanogaster     scientific name
+#> 4      7227        Drosophila melanogaster        species name
+#> 5      7227                      fruit fly genbank common name
+#> 6      7955                    Danio rerio     scientific name
+#> 7      7955                    Danio rerio        species name
+#> 8      7955                  leopard danio         common name
+#> 9      7955                    zebra danio         common name
+#> 10     7955                     zebra fish         common name
+#> 11     7955                      zebrafish genbank common name
+#> 12     8364             Xenopus tropicalis     scientific name
+#> 13     8364             Xenopus tropicalis        species name
+#> 14     8364           tropical clawed frog genbank common name
+#> 15     8364            western clawed frog         common name
+#> 16     9606                   Homo sapiens     scientific name
+#> 17     9606                   Homo sapiens        species name
+#> 18     9606                          human genbank common name
+#> 19    10090                   Mus musculus     scientific name
+#> 20    10090                   Mus musculus        species name
+#> 21    10090                    house mouse genbank common name
+#> 22    10090                          mouse         common name
+#> 23    10116                     Norway rat genbank common name
+#> 24    10116              Rattus norvegicus     scientific name
+#> 25    10116              Rattus norvegicus        species name
+#> 26    10116                      brown rat         common name
+#> 27    10116                            rat         common name
+#> 28    10116                           rats         common name
+#> 29   559292       Saccharomyces cerevisiae        species name
+#> 30   559292 Saccharomyces cerevisiae S288C     scientific name
+```
+
 ## Data
 
 The orthologs come from the [Alliance of Genome
@@ -241,10 +241,7 @@ The package uses the AGR stringent set that includes:
 - Pairs that two methods support, with a best match in both directions.
 - All pairs from HGNC or ZFIN.
 
-The package includes the eight species that have orthologs with all
-other species in the data.
-
-If you use the data, please cite AGR: Alliance of Genome Resources
+If you use the data, please cite: Alliance of Genome Resources
 Consortium. Updates to the Alliance of Genome Resources central
 infrastructure. *Genetics*. 2024. doi:
 [10.1093/genetics/iyae049](https://doi.org/10.1093/genetics/iyae049).
