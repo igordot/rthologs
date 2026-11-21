@@ -5,8 +5,7 @@ frame.
 
 ## Installation
 
-Install the development version from GitHub with pak. If you need pak,
-run `install.packages("pak")` first.
+Install the development version from GitHub with pak.
 
 ``` r
 
@@ -71,8 +70,71 @@ species of the genes, and the target species.
 
 ``` r
 
-result <- orthologs("TP53", source = "human", target = "mouse")
-dplyr::glimpse(result)
+odf <- orthologs("TP53", source = "human", target = "mouse")
+odf
+#>   input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1  TP53          TP53         Trp53          22059 ENSMUSG00000059552
+```
+
+The result is a standard data frame with one row for each known ortholog
+of the input genes. The `target_` columns identify the ortholog.
+
+The source and target can be any two species in the package.
+
+``` r
+
+odf <- orthologs("Trp53", source = "mouse", target = "rat")
+odf
+#>   input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1 Trp53         Trp53          Tp53          24842 ENSRNOG00000010756
+```
+
+### Input genes
+
+The input can be gene symbols, NCBI IDs, or Ensembl IDs. Inputs are
+case-sensitive and you can mix the input types in one vector.
+
+``` r
+
+genes <- c("TP53", "7157", "ENSG00000141510")
+odf <- orthologs(genes, source = "human", target = "mouse")
+odf
+#>             input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1            TP53          TP53         Trp53          22059 ENSMUSG00000059552
+#> 2            7157          TP53         Trp53          22059 ENSMUSG00000059552
+#> 3 ENSG00000141510          TP53         Trp53          22059 ENSMUSG00000059552
+```
+
+An input with no direct match can match a gene synonym. To use only the
+primary names, set `synonyms = FALSE`.
+
+``` r
+
+genes <- c("GAPDH", "CTGF", "SEPT7")
+orthologs(genes, source = "human", target = "mouse")
+#>   input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1 GAPDH         GAPDH         Gapdh          14433 ENSMUSG00000057666
+#> 2  CTGF          CCN2          Ccn2          14219 ENSMUSG00000019997
+#> 3 SEPT7       SEPTIN7       Septin7         235072 ENSMUSG00000001833
+```
+
+``` r
+
+orthologs(genes, source = "human", target = "mouse", synonyms = FALSE)
+#>   input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1 GAPDH         GAPDH         Gapdh          14433 ENSMUSG00000057666
+```
+
+### Output columns
+
+Set `details = TRUE` to include the source gene IDs and the supporting
+methods. The `support` and the `support_n`columns list the ortholog
+sources and their count.
+
+``` r
+
+odf <- orthologs("TP53", source = "human", target = "mouse", details = TRUE)
+dplyr::glimpse(odf)
 #> Rows: 1
 #> Columns: 11
 #> $ input             <chr> "TP53"
@@ -88,63 +150,6 @@ dplyr::glimpse(result)
 #> $ support_n         <int> 9
 ```
 
-The result is a standard data frame with one row for each input and
-matching gene pair. The `source_` columns identify the input gene. The
-`target_` columns identify the ortholog. The `support` column lists the
-sources that support the pair and the `support_n` column gives the
-number of these sources.
-
-The source and target can be any two species in the package.
-
-``` r
-
-result <- orthologs("Trp53", source = "mouse", target = "rat")
-dplyr::glimpse(result)
-#> Rows: 1
-#> Columns: 11
-#> $ input             <chr> "Trp53"
-#> $ source_taxon_id   <int> 10090
-#> $ source_symbol     <chr> "Trp53"
-#> $ source_ncbi_id    <chr> "22059"
-#> $ source_ensembl_id <chr> "ENSMUSG00000059552"
-#> $ target_taxon_id   <int> 10116
-#> $ target_symbol     <chr> "Tp53"
-#> $ target_ncbi_id    <chr> "24842"
-#> $ target_ensembl_id <chr> "ENSRNOG00000010756"
-#> $ support           <chr> "Ensembl Compara|Hieranoid|InParanoid|OMA|OrthoFinde…
-#> $ support_n         <int> 9
-```
-
-### Input genes
-
-The input can be gene symbols, NCBI IDs, or Ensembl IDs. Inputs are
-case-sensitive and you can mix the input types in one vector.
-
-``` r
-
-genes <- c("TP53", "7157", "ENSG00000141510")
-result <- orthologs(genes, source = "human", target = "mouse")
-result[, c("input", "source_symbol", "target_symbol")]
-#>             input source_symbol target_symbol
-#> 1            TP53          TP53         Trp53
-#> 2            7157          TP53         Trp53
-#> 3 ENSG00000141510          TP53         Trp53
-```
-
-An input with no direct match can match a gene synonym. Synonyms include
-previous symbols, such as `CTGF` for `CCN2`. To use only the primary
-names, set `synonyms = FALSE`.
-
-``` r
-
-genes <- c("CTGF", "SEPT7")
-result <- orthologs(genes, source = "human", target = "mouse")
-result[, c("input", "source_symbol", "target_symbol")]
-#>   input source_symbol target_symbol
-#> 1  CTGF          CCN2          Ccn2
-#> 2 SEPT7       SEPTIN7       Septin7
-```
-
 ### Multiple matches
 
 An input can have more than one ortholog. Each ortholog gets its own
@@ -152,46 +157,47 @@ row.
 
 ``` r
 
-genes <- c("Ptprc", "Hba-a1", "Gapdh")
-result <- orthologs(genes, source = "mouse", target = "zebrafish")
-result[, c("input", "target_symbol", "support_n")]
-#>    input target_symbol support_n
-#> 1  Ptprc         ptprc         8
-#> 2 Hba-a1       hbae1.1         8
-#> 3 Hba-a1         hbaa2         8
-#> 4  Gapdh         gapdh        10
+orthologs(genes = c("Ptprc", "Hba-a1", "Gapdh"), source = "mouse", target = "zebrafish")
+#>    input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1  Ptprc         Ptprc         ptprc         559154 ENSDARG00000071437
+#> 2 Hba-a1        Hba-a1       hbae1.1          30597 ENSDARG00000089475
+#> 3 Hba-a1        Hba-a1         hbaa2         497166 ENSDARG00000069735
+#> 4  Gapdh         Gapdh         gapdh         317743 ENSDARG00000043457
 ```
 
 By default, the result includes only the best matches. To get all the
-orthologs in the data, set `best = FALSE`.
+potential orthologs, set `best = FALSE`.
 
 ``` r
 
-result <- orthologs(
+odf <- orthologs(
   "Hba-a1",
   source = "mouse",
   target = "zebrafish",
-  best = FALSE
+  best = FALSE,
+  details = TRUE
 )
-result[, c("input", "target_symbol", "support_n")]
+odf[, c("input", "target_symbol", "support_n")]
 #>    input target_symbol support_n
 #> 1 Hba-a1       hbae1.1         8
 #> 2 Hba-a1         hbaa2         8
 #> 3 Hba-a1         hbae4         4
 ```
 
-To keep only the pairs with more support, set `min_support`.
+Set `min_support` to keep pairs with a certain number of supporting
+methods.
 
 ``` r
 
-result <- orthologs(
+odf <- orthologs(
   "Hba-a1",
   source = "mouse",
   target = "zebrafish",
   best = FALSE,
-  min_support = 6
+  min_support = 6,
+  details = TRUE
 )
-result[, c("input", "target_symbol", "support_n")]
+odf[, c("input", "target_symbol", "support_n")]
 #>    input target_symbol support_n
 #> 1 Hba-a1       hbae1.1         8
 #> 2 Hba-a1         hbaa2         8
@@ -199,28 +205,26 @@ result[, c("input", "target_symbol", "support_n")]
 
 ### Inputs without orthologs
 
-By default, the result does not include inputs with no orthologs. To
-keep these inputs, set `orthologs_only = FALSE`. Each of these inputs
-then gets one row with `NA` in all other columns.
+By default, the output only includes genes with known orthologs. To keep
+all inputs, set `orthologs_only = FALSE`.
 
 ``` r
 
-genes <- c("Ptprc", "Cd34", "Fakegene")
-result <- orthologs(
-  genes,
+orthologs(
+  genes = c("Ptprc", "Cd34", "Fakegene"),
   source = "mouse",
   target = "zebrafish",
   orthologs_only = FALSE
 )
-result[, c("input", "target_symbol")]
-#>      input target_symbol
-#> 1    Ptprc         ptprc
-#> 2     Cd34          <NA>
-#> 3 Fakegene          <NA>
+#>      input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1    Ptprc         Ptprc         ptprc         559154 ENSDARG00000071437
+#> 2     Cd34          <NA>          <NA>           <NA>               <NA>
+#> 3 Fakegene          <NA>          <NA>           <NA>               <NA>
 ```
 
-`Cd34` is a valid mouse gene, but the data contain no zebrafish ortholog
-for it. `Fakegene` is not a mouse gene.
+Genes without orthologs get one row with `NA` in all columns. `Cd34` is
+a valid mouse gene, but the data contain no zebrafish ortholog for it.
+`Fakegene` is not a mouse gene.
 
 ## Data
 

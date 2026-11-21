@@ -12,7 +12,8 @@ orthologs(
   synonyms = TRUE,
   best = TRUE,
   min_support = 1,
-  orthologs_only = TRUE
+  orthologs_only = TRUE,
+  details = FALSE
 )
 ```
 
@@ -34,27 +35,32 @@ orthologs(
 
 - synonyms:
 
-  If `TRUE` (default), check gene synonyms for inputs with no direct
-  match.
+  If `TRUE` (default), check synonyms for input genes.
 
 - best:
 
-  If `TRUE` (default), keep only the best matches, which can differ
-  between search directions.
+  If `TRUE` (default), keep only the best matches.
 
 - min_support:
 
-  Minimum number of methods or sources that support a gene pair. Use one
-  positive whole number. The maximum possible count depends on the
-  species pair.
+  Minimum number of sources that support each gene pair.
 
 - orthologs_only:
 
-  If `TRUE` (default), keep only inputs with at least one matching pair.
+  If `TRUE` (default), keep only matching pairs.
+
+- details:
+
+  If `TRUE`, return the source gene IDs and the support sources.
 
 ## Value
 
-A data frame with one row per distinct input and matching gene pair.
+A data frame with one row per distinct input and matching gene pair. The
+columns are `input`, `source_symbol`, `target_symbol`, `target_ncbi_id`,
+and `target_ensembl_id`. With `details = TRUE`, the columns also include
+`source_taxon_id`, `source_ncbi_id`, `source_ensembl_id`,
+`target_taxon_id`, `support` (the methods or sources that support the
+pair), and `support_n` (the number of these).
 
 ## Details
 
@@ -80,34 +86,13 @@ Genome Resources central infrastructure. Genetics. 2024. doi:
 
 ``` r
 orthologs(genes = "TP53", source = "human", target = "mouse")
-#>   input source_taxon_id source_symbol source_ncbi_id source_ensembl_id
-#> 1  TP53            9606          TP53           7157   ENSG00000141510
-#>   target_taxon_id target_symbol target_ncbi_id  target_ensembl_id
-#> 1           10090         Trp53          22059 ENSMUSG00000059552
-#>                                                                                    support
-#> 1 HGNC|Hieranoid|InParanoid|OMA|OrthoFinder|OrthoInspector|PANTHER|PhylomeDB|SonicParanoid
-#>   support_n
-#> 1         9
-orthologs(genes = c("Ptprc", "Cd34"), source = "mouse", target = "human")
-#>   input source_taxon_id source_symbol source_ncbi_id  source_ensembl_id
-#> 1 Ptprc           10090         Ptprc          19264 ENSMUSG00000026395
-#> 2  Cd34           10090          Cd34          12490 ENSMUSG00000016494
-#>   target_taxon_id target_symbol target_ncbi_id target_ensembl_id
-#> 1            9606         PTPRC           5788   ENSG00000081237
-#> 2            9606          CD34            947   ENSG00000174059
-#>                                                                                                    support
-#> 1 Ensembl Compara|HGNC|Hieranoid|InParanoid|OMA|OrthoFinder|OrthoInspector|PANTHER|PhylomeDB|SonicParanoid
-#> 2 Ensembl Compara|HGNC|Hieranoid|InParanoid|OMA|OrthoFinder|OrthoInspector|PANTHER|PhylomeDB|SonicParanoid
-#>   support_n
-#> 1        10
-#> 2        10
+#>   input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1  TP53          TP53         Trp53          22059 ENSMUSG00000059552
 orthologs(genes = "Trp53", source = "mouse", target = "rat")
-#>   input source_taxon_id source_symbol source_ncbi_id  source_ensembl_id
-#> 1 Trp53           10090         Trp53          22059 ENSMUSG00000059552
-#>   target_taxon_id target_symbol target_ncbi_id  target_ensembl_id
-#> 1           10116          Tp53          24842 ENSRNOG00000010756
-#>                                                                                               support
-#> 1 Ensembl Compara|Hieranoid|InParanoid|OMA|OrthoFinder|OrthoInspector|PANTHER|PhylomeDB|SonicParanoid
-#>   support_n
-#> 1         9
+#>   input source_symbol target_symbol target_ncbi_id  target_ensembl_id
+#> 1 Trp53         Trp53          Tp53          24842 ENSRNOG00000010756
+orthologs(genes = c("Ptprc", "Cd34"), source = "mouse", target = "human")
+#>   input source_symbol target_symbol target_ncbi_id target_ensembl_id
+#> 1 Ptprc         Ptprc         PTPRC           5788   ENSG00000081237
+#> 2  Cd34          Cd34          CD34            947   ENSG00000174059
 ```

@@ -63,8 +63,7 @@ data frame.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install the development version from GitHub with pak. If you need
-pak, run <code>install.packages("pak")</code> first.</p>
+<p>Install the development version from GitHub with pak.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"igordot/rthologs"</span><span class="op">)</span></span></code></pre></div>
 <p>Load rthologs to run the examples.</p>
@@ -117,8 +116,56 @@ accepted names.</p>
 Give the genes, the source species of the genes, and the target
 species.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="st">"TP53"</span>, source <span class="op">=</span> <span class="st">"human"</span>, target <span class="op">=</span> <span class="st">"mouse"</span><span class="op">)</span></span>
-<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">odf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="st">"TP53"</span>, source <span class="op">=</span> <span class="st">"human"</span>, target <span class="op">=</span> <span class="st">"mouse"</span><span class="op">)</span></span>
+<span><span class="va">odf</span></span>
+<span><span class="co">#&gt;   input source_symbol target_symbol target_ncbi_id  target_ensembl_id</span></span>
+<span><span class="co">#&gt; 1  TP53          TP53         Trp53          22059 ENSMUSG00000059552</span></span></code></pre></div>
+<p>The result is a standard data frame with one row for each known
+ortholog of the input genes. The <code>target_</code> columns identify
+the ortholog.</p>
+<p>The source and target can be any two species in the package.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">odf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="st">"Trp53"</span>, source <span class="op">=</span> <span class="st">"mouse"</span>, target <span class="op">=</span> <span class="st">"rat"</span><span class="op">)</span></span>
+<span><span class="va">odf</span></span>
+<span><span class="co">#&gt;   input source_symbol target_symbol target_ncbi_id  target_ensembl_id</span></span>
+<span><span class="co">#&gt; 1 Trp53         Trp53          Tp53          24842 ENSRNOG00000010756</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="input-genes">Input genes<a class="anchor" aria-label="anchor" href="#input-genes"></a>
+</h3>
+<p>The input can be gene symbols, NCBI IDs, or Ensembl IDs. Inputs are
+case-sensitive and you can mix the input types in one vector.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TP53"</span>, <span class="st">"7157"</span>, <span class="st">"ENSG00000141510"</span><span class="op">)</span></span>
+<span><span class="va">odf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="va">genes</span>, source <span class="op">=</span> <span class="st">"human"</span>, target <span class="op">=</span> <span class="st">"mouse"</span><span class="op">)</span></span>
+<span><span class="va">odf</span></span>
+<span><span class="co">#&gt;             input source_symbol target_symbol target_ncbi_id  target_ensembl_id</span></span>
+<span><span class="co">#&gt; 1            TP53          TP53         Trp53          22059 ENSMUSG00000059552</span></span>
+<span><span class="co">#&gt; 2            7157          TP53         Trp53          22059 ENSMUSG00000059552</span></span>
+<span><span class="co">#&gt; 3 ENSG00000141510          TP53         Trp53          22059 ENSMUSG00000059552</span></span></code></pre></div>
+<p>An input with no direct match can match a gene synonym. To use only
+the primary names, set <code>synonyms = FALSE</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GAPDH"</span>, <span class="st">"CTGF"</span>, <span class="st">"SEPT7"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="va">genes</span>, source <span class="op">=</span> <span class="st">"human"</span>, target <span class="op">=</span> <span class="st">"mouse"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   input source_symbol target_symbol target_ncbi_id  target_ensembl_id</span></span>
+<span><span class="co">#&gt; 1 GAPDH         GAPDH         Gapdh          14433 ENSMUSG00000057666</span></span>
+<span><span class="co">#&gt; 2  CTGF          CCN2          Ccn2          14219 ENSMUSG00000019997</span></span>
+<span><span class="co">#&gt; 3 SEPT7       SEPTIN7       Septin7         235072 ENSMUSG00000001833</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="va">genes</span>, source <span class="op">=</span> <span class="st">"human"</span>, target <span class="op">=</span> <span class="st">"mouse"</span>, synonyms <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   input source_symbol target_symbol target_ncbi_id  target_ensembl_id</span></span>
+<span><span class="co">#&gt; 1 GAPDH         GAPDH         Gapdh          14433 ENSMUSG00000057666</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="output-columns">Output columns<a class="anchor" aria-label="anchor" href="#output-columns"></a>
+</h3>
+<p>Set <code>details = TRUE</code> to include the source gene IDs and
+the supporting methods. The <code>support</code> and the
+<code>support_n</code>columns list the ortholog sources and their
+count.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">odf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="st">"TP53"</span>, source <span class="op">=</span> <span class="st">"human"</span>, target <span class="op">=</span> <span class="st">"mouse"</span>, details <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">odf</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 1</span></span>
 <span><span class="co">#&gt; Columns: 11</span></span>
 <span><span class="co">#&gt; $ input             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "TP53"</span></span>
@@ -132,92 +179,46 @@ species.</p>
 <span><span class="co">#&gt; $ target_ensembl_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSMUSG00000059552"</span></span>
 <span><span class="co">#&gt; $ support           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "HGNC|Hieranoid|InParanoid|OMA|OrthoFinder|OrthoInsp…</span></span>
 <span><span class="co">#&gt; $ support_n         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 9</span></span></code></pre></div>
-<p>The result is a standard data frame with one row for each input and
-matching gene pair. The <code>source_</code> columns identify the input
-gene. The <code>target_</code> columns identify the ortholog. The
-<code>support</code> column lists the sources that support the pair and
-the <code>support_n</code> column gives the number of these sources.</p>
-<p>The source and target can be any two species in the package.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="st">"Trp53"</span>, source <span class="op">=</span> <span class="st">"mouse"</span>, target <span class="op">=</span> <span class="st">"rat"</span><span class="op">)</span></span>
-<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 1</span></span>
-<span><span class="co">#&gt; Columns: 11</span></span>
-<span><span class="co">#&gt; $ input             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Trp53"</span></span>
-<span><span class="co">#&gt; $ source_taxon_id   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 10090</span></span>
-<span><span class="co">#&gt; $ source_symbol     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Trp53"</span></span>
-<span><span class="co">#&gt; $ source_ncbi_id    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "22059"</span></span>
-<span><span class="co">#&gt; $ source_ensembl_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSMUSG00000059552"</span></span>
-<span><span class="co">#&gt; $ target_taxon_id   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 10116</span></span>
-<span><span class="co">#&gt; $ target_symbol     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Tp53"</span></span>
-<span><span class="co">#&gt; $ target_ncbi_id    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "24842"</span></span>
-<span><span class="co">#&gt; $ target_ensembl_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSRNOG00000010756"</span></span>
-<span><span class="co">#&gt; $ support           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Ensembl Compara|Hieranoid|InParanoid|OMA|OrthoFinde…</span></span>
-<span><span class="co">#&gt; $ support_n         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 9</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="input-genes">Input genes<a class="anchor" aria-label="anchor" href="#input-genes"></a>
-</h3>
-<p>The input can be gene symbols, NCBI IDs, or Ensembl IDs. Inputs are
-case-sensitive and you can mix the input types in one vector.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TP53"</span>, <span class="st">"7157"</span>, <span class="st">"ENSG00000141510"</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="va">genes</span>, source <span class="op">=</span> <span class="st">"human"</span>, target <span class="op">=</span> <span class="st">"mouse"</span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"input"</span>, <span class="st">"source_symbol"</span>, <span class="st">"target_symbol"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;             input source_symbol target_symbol</span></span>
-<span><span class="co">#&gt; 1            TP53          TP53         Trp53</span></span>
-<span><span class="co">#&gt; 2            7157          TP53         Trp53</span></span>
-<span><span class="co">#&gt; 3 ENSG00000141510          TP53         Trp53</span></span></code></pre></div>
-<p>An input with no direct match can match a gene synonym. Synonyms
-include previous symbols, such as <code>CTGF</code> for
-<code>CCN2</code>. To use only the primary names, set
-<code>synonyms = FALSE</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CTGF"</span>, <span class="st">"SEPT7"</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="va">genes</span>, source <span class="op">=</span> <span class="st">"human"</span>, target <span class="op">=</span> <span class="st">"mouse"</span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"input"</span>, <span class="st">"source_symbol"</span>, <span class="st">"target_symbol"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;   input source_symbol target_symbol</span></span>
-<span><span class="co">#&gt; 1  CTGF          CCN2          Ccn2</span></span>
-<span><span class="co">#&gt; 2 SEPT7       SEPTIN7       Septin7</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="multiple-matches">Multiple matches<a class="anchor" aria-label="anchor" href="#multiple-matches"></a>
 </h3>
 <p>An input can have more than one ortholog. Each ortholog gets its own
 row.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ptprc"</span>, <span class="st">"Hba-a1"</span>, <span class="st">"Gapdh"</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span><span class="va">genes</span>, source <span class="op">=</span> <span class="st">"mouse"</span>, target <span class="op">=</span> <span class="st">"zebrafish"</span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"input"</span>, <span class="st">"target_symbol"</span>, <span class="st">"support_n"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;    input target_symbol support_n</span></span>
-<span><span class="co">#&gt; 1  Ptprc         ptprc         8</span></span>
-<span><span class="co">#&gt; 2 Hba-a1       hbae1.1         8</span></span>
-<span><span class="co">#&gt; 3 Hba-a1         hbaa2         8</span></span>
-<span><span class="co">#&gt; 4  Gapdh         gapdh        10</span></span></code></pre></div>
-<p>By default, the result includes only the best matches. To get all the
-orthologs in the data, set <code>best = FALSE</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span></span>
-<span>  <span class="st">"Hba-a1"</span>,</span>
-<span>  source <span class="op">=</span> <span class="st">"mouse"</span>,</span>
-<span>  target <span class="op">=</span> <span class="st">"zebrafish"</span>,</span>
-<span>  best <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"input"</span>, <span class="st">"target_symbol"</span>, <span class="st">"support_n"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;    input target_symbol support_n</span></span>
-<span><span class="co">#&gt; 1 Hba-a1       hbae1.1         8</span></span>
-<span><span class="co">#&gt; 2 Hba-a1         hbaa2         8</span></span>
-<span><span class="co">#&gt; 3 Hba-a1         hbae4         4</span></span></code></pre></div>
-<p>To keep only the pairs with more support, set
-<code>min_support</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span>genes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ptprc"</span>, <span class="st">"Hba-a1"</span>, <span class="st">"Gapdh"</span><span class="op">)</span>, source <span class="op">=</span> <span class="st">"mouse"</span>, target <span class="op">=</span> <span class="st">"zebrafish"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    input source_symbol target_symbol target_ncbi_id  target_ensembl_id</span></span>
+<span><span class="co">#&gt; 1  Ptprc         Ptprc         ptprc         559154 ENSDARG00000071437</span></span>
+<span><span class="co">#&gt; 2 Hba-a1        Hba-a1       hbae1.1          30597 ENSDARG00000089475</span></span>
+<span><span class="co">#&gt; 3 Hba-a1        Hba-a1         hbaa2         497166 ENSDARG00000069735</span></span>
+<span><span class="co">#&gt; 4  Gapdh         Gapdh         gapdh         317743 ENSDARG00000043457</span></span></code></pre></div>
+<p>By default, the result includes only the best matches. To get all the
+potential orthologs, set <code>best = FALSE</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">odf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Hba-a1"</span>,</span>
 <span>  source <span class="op">=</span> <span class="st">"mouse"</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"zebrafish"</span>,</span>
 <span>  best <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  min_support <span class="op">=</span> <span class="fl">6</span></span>
+<span>  details <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"input"</span>, <span class="st">"target_symbol"</span>, <span class="st">"support_n"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">odf</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"input"</span>, <span class="st">"target_symbol"</span>, <span class="st">"support_n"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;    input target_symbol support_n</span></span>
+<span><span class="co">#&gt; 1 Hba-a1       hbae1.1         8</span></span>
+<span><span class="co">#&gt; 2 Hba-a1         hbaa2         8</span></span>
+<span><span class="co">#&gt; 3 Hba-a1         hbae4         4</span></span></code></pre></div>
+<p>Set <code>min_support</code> to keep pairs with a certain number of
+supporting methods.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">odf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Hba-a1"</span>,</span>
+<span>  source <span class="op">=</span> <span class="st">"mouse"</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"zebrafish"</span>,</span>
+<span>  best <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  min_support <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>  details <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">odf</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"input"</span>, <span class="st">"target_symbol"</span>, <span class="st">"support_n"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;    input target_symbol support_n</span></span>
 <span><span class="co">#&gt; 1 Hba-a1       hbae1.1         8</span></span>
 <span><span class="co">#&gt; 2 Hba-a1         hbaa2         8</span></span></code></pre></div>
@@ -225,25 +226,22 @@ orthologs in the data, set <code>best = FALSE</code>.</p>
 <div class="section level3">
 <h3 id="inputs-without-orthologs">Inputs without orthologs<a class="anchor" aria-label="anchor" href="#inputs-without-orthologs"></a>
 </h3>
-<p>By default, the result does not include inputs with no orthologs. To
-keep these inputs, set <code>orthologs_only = FALSE</code>. Each of
-these inputs then gets one row with <code>NA</code> in all other
-columns.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ptprc"</span>, <span class="st">"Cd34"</span>, <span class="st">"Fakegene"</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span></span>
-<span>  <span class="va">genes</span>,</span>
+<p>By default, the output only includes genes with known orthologs. To
+keep all inputs, set <code>orthologs_only = FALSE</code>.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/orthologs.html">orthologs</a></span><span class="op">(</span></span>
+<span>  genes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ptprc"</span>, <span class="st">"Cd34"</span>, <span class="st">"Fakegene"</span><span class="op">)</span>,</span>
 <span>  source <span class="op">=</span> <span class="st">"mouse"</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"zebrafish"</span>,</span>
 <span>  orthologs_only <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"input"</span>, <span class="st">"target_symbol"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;      input target_symbol</span></span>
-<span><span class="co">#&gt; 1    Ptprc         ptprc</span></span>
-<span><span class="co">#&gt; 2     Cd34          &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3 Fakegene          &lt;NA&gt;</span></span></code></pre></div>
-<p><code>Cd34</code> is a valid mouse gene, but the data contain no
-zebrafish ortholog for it. <code>Fakegene</code> is not a mouse
+<span><span class="co">#&gt;      input source_symbol target_symbol target_ncbi_id  target_ensembl_id</span></span>
+<span><span class="co">#&gt; 1    Ptprc         Ptprc         ptprc         559154 ENSDARG00000071437</span></span>
+<span><span class="co">#&gt; 2     Cd34          &lt;NA&gt;          &lt;NA&gt;           &lt;NA&gt;               &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3 Fakegene          &lt;NA&gt;          &lt;NA&gt;           &lt;NA&gt;               &lt;NA&gt;</span></span></code></pre></div>
+<p>Genes without orthologs get one row with <code>NA</code> in all
+columns. <code>Cd34</code> is a valid mouse gene, but the data contain
+no zebrafish ortholog for it. <code>Fakegene</code> is not a mouse
 gene.</p>
 </div>
 </div>
