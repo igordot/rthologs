@@ -11,7 +11,8 @@ orthologs(
   synonyms = TRUE,
   best = TRUE,
   min_support = 1,
-  orthologs_only = TRUE
+  orthologs_only = TRUE,
+  details = FALSE
 )
 }
 \arguments{
@@ -22,21 +23,23 @@ orthologs(
 
 \item{target}{Species in which to find orthologs.}
 
-\item{synonyms}{If \code{TRUE} (default), check gene synonyms for inputs
-with no direct match.}
+\item{synonyms}{If \code{TRUE} (default), check synonyms for input genes.}
 
-\item{best}{If \code{TRUE} (default), keep only the best matches, which can
-differ between search directions.}
+\item{best}{If \code{TRUE} (default), keep only the best matches.}
 
-\item{min_support}{Minimum number of methods or sources that support a gene
-pair. Use one positive whole number. The maximum possible count depends
-on the species pair.}
+\item{min_support}{Minimum number of sources that support each gene pair.}
 
-\item{orthologs_only}{If \code{TRUE} (default), keep only inputs with at least
-one matching pair.}
+\item{orthologs_only}{If \code{TRUE} (default), keep only matching pairs.}
+
+\item{details}{If \code{TRUE}, return the source gene IDs and the support sources.}
 }
 \value{
 A data frame with one row per distinct input and matching gene pair.
+The columns are \code{input}, \code{source_symbol}, \code{target_symbol},
+\code{target_ncbi_id}, and \code{target_ensembl_id}. With \code{details = TRUE}, the
+columns also include \code{source_taxon_id}, \code{source_ncbi_id},
+\code{source_ensembl_id}, \code{target_taxon_id}, \code{support} (the methods or sources
+that support the pair), and \code{support_n} (the number of these).
 }
 \description{
 Find cross-species orthologs for a set of genes.
@@ -55,8 +58,8 @@ includes all pairs from ZFIN or HGNC.
 }
 \examples{
 orthologs(genes = "TP53", source = "human", target = "mouse")
-orthologs(genes = c("Ptprc", "Cd34"), source = "mouse", target = "human")
 orthologs(genes = "Trp53", source = "mouse", target = "rat")
+orthologs(genes = c("Ptprc", "Cd34"), source = "mouse", target = "human")
 }
 \references{
 Alliance of Genome Resources Consortium. Updates to the Alliance of Genome

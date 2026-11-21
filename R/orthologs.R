@@ -6,17 +6,18 @@
 #'   (case-sensitive).
 #' @param source Species of `genes`, such as `"mouse"`. See [species()].
 #' @param target Species in which to find orthologs.
-#' @param synonyms If `TRUE` (default), check gene synonyms for inputs
-#'   with no direct match.
-#' @param best If `TRUE` (default), keep only the best matches, which can
-#'   differ between search directions.
-#' @param min_support Minimum number of methods or sources that support a gene
-#'   pair. Use one positive whole number. The maximum possible count depends
-#'   on the species pair.
-#' @param orthologs_only If `TRUE` (default), keep only inputs with at least
-#'   one matching pair.
+#' @param synonyms If `TRUE` (default), check synonyms for input genes.
+#' @param best If `TRUE` (default), keep only the best matches.
+#' @param min_support Minimum number of sources that support each gene pair.
+#' @param orthologs_only If `TRUE` (default), keep only matching pairs.
+#' @param details If `TRUE`, return the source gene IDs and the support sources.
 #'
 #' @return A data frame with one row per distinct input and matching gene pair.
+#'   The columns are `input`, `source_symbol`, `target_symbol`,
+#'   `target_ncbi_id`, and `target_ensembl_id`. With `details = TRUE`, the
+#'   columns also include `source_taxon_id`, `source_ncbi_id`,
+#'   `source_ensembl_id`, `target_taxon_id`, `support` (the methods or sources
+#'   that support the pair), and `support_n` (the number of these).
 #'
 #' @details
 #' The function uses each distinct input once.
@@ -39,8 +40,8 @@
 #'
 #' @examples
 #' orthologs(genes = "TP53", source = "human", target = "mouse")
-#' orthologs(genes = c("Ptprc", "Cd34"), source = "mouse", target = "human")
 #' orthologs(genes = "Trp53", source = "mouse", target = "rat")
+#' orthologs(genes = c("Ptprc", "Cd34"), source = "mouse", target = "human")
 orthologs <- function(
   genes,
   source,
@@ -48,12 +49,22 @@ orthologs <- function(
   synonyms = TRUE,
   best = TRUE,
   min_support = 1,
-  orthologs_only = TRUE
+  orthologs_only = TRUE,
+  details = FALSE
 ) {
   # Check the arguments
-  if (!rlang::is_character(genes) || !is.null(dim(genes))) {
-    cli_abort("`genes` must be a character vector.")
+  if (!is.atomic(genes) || !is.null(dim(genes))) {
+    cli_abort("`genes` must be a vector.")
   }
+  # Allow other types, such as integer NCBI IDs, as text
+  inputs <- as.character(genes)
+  if (is.double(genes) && !is.object(genes)) {
+    # Write whole numbers in decimal form so they match the stored NCBI IDs
+    # as.character() writes some whole numbers (500000 as "5e+05")
+    whole <- is.finite(genes) & genes == trunc(genes)
+    inputs[whole] <- sprintf("%.0f", genes[whole])
+  }
+  genes <- inputs
   if (!rlang::is_bool(synonyms)) {
     cli_abort("`synonyms` must be TRUE or FALSE.")
   }
@@ -67,6 +78,9 @@ orthologs <- function(
   }
   if (!rlang::is_bool(orthologs_only)) {
     cli_abort("`orthologs_only` must be TRUE or FALSE.")
+  }
+  if (!rlang::is_bool(details)) {
+    cli_abort("`details` must be TRUE or FALSE.")
   }
   if (is.null(source) || is.null(target)) {
     cli_abort("`source` and `target` must each name one species.")
@@ -82,7 +96,7 @@ orthologs <- function(
     genes <- genes[!is.na(genes)]
   }
   # Search each gene once
-  lookup_orthologs(
+  out <- lookup_orthologs(
     unique(genes),
     source_taxon_id,
     target_taxon_id,
@@ -93,6 +107,16 @@ orthologs <- function(
     synonyms,
     orthologs_only
   )
+  if (details) {
+    return(out)
+  }
+  out[c(
+    "input",
+    "source_symbol",
+    "target_symbol",
+    "target_ncbi_id",
+    "target_ensembl_id"
+  )]
 }
 
 # Find the orthologs of `genes` from `source` to `target` (both taxon IDs)
