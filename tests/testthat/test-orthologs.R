@@ -388,3 +388,144 @@ test_that("invalid input and unknown species cause errors", {
   expect_error(orthologs("TP53", "human", "human"))
   expect_error(orthologs("Trp53", "mouse", "Xenopus laevis"))
 })
+
+# Get each pair in both search directions with the species names
+read_searches <- function() {
+  cases <- read.delim(test_path("fixtures", "difficult-pairs.tsv"))
+  reverse <- cases[c(6:10, 1:5)]
+  names(reverse) <- names(cases)
+  cases <- rbind(cases, reverse)
+  species_names <- species_df[species_df$name_class == "species name", ]
+  cases$source <- species_names$name[match(
+    cases$taxon_id,
+    species_names$taxon_id
+  )]
+  cases$target <- species_names$name[match(
+    cases$partner_taxon_id,
+    species_names$taxon_id
+  )]
+  cases
+}
+
+# Search each gene by one input type and return the genes with no results
+search_failures <- function(column) {
+  cases <- read_searches()
+  cases <- cases[!is.na(cases[[column]]), ]
+  found <- vapply(
+    seq_len(nrow(cases)),
+    function(i) {
+      out <- orthologs(
+        cases[[column]][i],
+        cases$source[i],
+        cases$target[i],
+        details = TRUE
+      )
+      nrow(out) > 0L && all(out$source_ncbi_id == cases$ncbi_id[i])
+    },
+    logical(1)
+  )
+  cases$symbol[!found]
+}
+
+test_that("a search by symbol finds the expected gene", {
+  expect_identical(search_failures("symbol"), character())
+})
+
+test_that("a search by NCBI ID finds the expected gene", {
+  expect_identical(search_failures("ncbi_id"), character())
+})
+
+test_that("a search by Ensembl ID finds the expected gene", {
+  expect_identical(search_failures("ensembl_id"), character())
+})
+
+test_that("each difficult pair is present in both search directions", {
+  cases <- read_searches()
+  for (i in seq_len(nrow(cases))) {
+    out <- orthologs(
+      cases$ncbi_id[i],
+      cases$source[i],
+      cases$target[i],
+      best = FALSE,
+      details = TRUE
+    )
+    targets <- out$target_ncbi_id[out$source_ncbi_id == cases$ncbi_id[i]]
+    expect_in(as.character(cases$partner_ncbi_id[i]), targets)
+  }
+})
+
+test_that("MSigDB M45000 human genes match MM1334", {
+  # `source_id` is a human Ensembl ID
+  # MM1334 is the mouse version of M45000
+  hs_set <- read.delim(test_path("fixtures", "genes-human-human-M45000.tsv"))
+  mm_set <- read.delim(test_path("fixtures", "genes-mouse-human-MM1334.tsv"))
+  in_mm <- hs_set$source_id %in% mm_set$source_id
+  out <- orthologs(hs_set$symbol[in_mm], "human", "mouse", details = TRUE)
+  expect_lte(sum(!hs_set$ncbi_id[in_mm] %in% out$source_ncbi_id), 1)
+  expect_lte(sum(!hs_set$source_id[in_mm] %in% out$source_ensembl_id), 1)
+  # The genes that MSigDB does not map to a mouse gene have no orthologs
+  out <- orthologs(hs_set$symbol[!in_mm], "human", "mouse")
+  expect_lt(length(unique(out$input)) / sum(!in_mm), 0.05)
+})
+
+test_that("MSigDB MM17506 finds the same genes for human and rat", {
+  # `source_id` is a mouse Ensembl ID
+  gene_set <- read.delim(test_path("fixtures", "genes-mouse-mouse-MM17506.tsv"))
+  hs <- orthologs(gene_set$symbol, "mouse", "human", details = TRUE)
+  rn <- orthologs(gene_set$symbol, "mouse", "rat", details = TRUE)
+  expect_lte(sum(!gene_set$source_id %in% hs$source_ensembl_id), 1)
+  hs <- intersect(gene_set$ncbi_id, hs$source_ncbi_id)
+  rn <- intersect(gene_set$ncbi_id, rn$source_ncbi_id)
+  expect_gt(length(hs) / length(unique(gene_set$ncbi_id)), 0.95)
+  expect_gt(length(rn) / length(unique(gene_set$ncbi_id)), 0.95)
+  expect_gt(length(intersect(hs, rn)) / length(union(hs, rn)), 0.95)
+})
+
+test_that("MSigDB MM3637 finds the same genes for three species", {
+  gene_set <- read.delim(test_path("fixtures", "genes-mouse-mouse-MM3637.tsv"))
+  hs <- orthologs(gene_set$symbol, "mouse", "human", details = TRUE)
+  rn <- orthologs(gene_set$symbol, "mouse", "rat", details = TRUE)
+  dr <- orthologs(gene_set$symbol, "mouse", "zebrafish", details = TRUE)
+  hs <- intersect(gene_set$ncbi_id, hs$source_ncbi_id)
+  rn <- intersect(gene_set$ncbi_id, rn$source_ncbi_id)
+  dr <- intersect(gene_set$ncbi_id, dr$source_ncbi_id)
+  expect_gt(length(hs) / length(unique(gene_set$ncbi_id)), 0.8)
+  expect_gt(length(rn) / length(unique(gene_set$ncbi_id)), 0.8)
+  expect_gt(length(dr) / length(unique(gene_set$ncbi_id)), 0.7)
+  expect_gt(length(intersect(hs, rn)) / length(union(hs, rn)), 0.95)
+  all <- intersect(intersect(hs, rn), dr)
+  any <- union(union(hs, rn), dr)
+  expect_gt(length(all) / length(any), 0.7)
+})
+
+test_that("MSigDB MM1334 human Ensembl IDs give the mouse NCBI IDs", {
+  # `source_id` is a human Ensembl ID
+  gene_set <- read.delim(test_path("fixtures", "genes-mouse-human-MM1334.tsv"))
+  out <- orthologs(gene_set$source_id, "human", "mouse")
+  same <- paste(gene_set$source_id, gene_set$ncbi_id) %in%
+    paste(out$input, out$target_ncbi_id)
+  expect_lte(sum(!same), 1)
+  # The reverse conversion gives the MSigDB human Ensembl IDs for most genes
+  reverse <- orthologs(gene_set$symbol, "mouse", "human")
+  same <- paste(gene_set$symbol, gene_set$source_id) %in%
+    paste(reverse$input, reverse$target_ensembl_id)
+  expect_gt(mean(same), 0.8)
+})
+
+test_that("MSigDB M46418 rat symbols give the human NCBI IDs", {
+  # `source_id` is a rat symbol
+  gene_set <- read.delim(test_path("fixtures", "genes-human-rat-M46418.tsv"))
+  out <- orthologs(gene_set$source_id, "rat", "human")
+  same <- paste(gene_set$source_id, gene_set$ncbi_id) %in%
+    paste(out$input, out$target_ncbi_id)
+  expect_gt(mean(same), 0.95)
+})
+
+test_that("MSigDB MM16096 rat symbols give the mouse NCBI IDs", {
+  # `source_id` is a rat symbol
+  gene_set <- read.delim(test_path("fixtures", "genes-mouse-rat-MM16096.tsv"))
+  out <- orthologs(gene_set$source_id, "rat", "mouse")
+  same <- paste(gene_set$source_id, gene_set$ncbi_id) %in%
+    paste(out$input, out$target_ncbi_id)
+  expect_gt(mean(same), 0.95)
+})

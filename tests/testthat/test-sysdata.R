@@ -120,3 +120,48 @@ test_that("synonyms identify one gene and no symbols or Ensembl IDs", {
   expect_length(intersect(synonym_keys, ensembl_keys), 0L)
 })
 
+# Genes for which AGR does not list only one NCBI or Ensembl ID
+test_that("genes with AGR ID gaps are in the gene table", {
+  gaps <- read.delim(test_path("fixtures", "agr-id-gaps.tsv"))
+  genes <- genes_df[match(gaps$agr_id, genes_df$agr_id), ]
+  expect_false(anyNA(genes$ncbi_id))
+  # Genes keep the NCBI ID that AGR lists
+  known <- !is.na(gaps$agr_ncbi_id)
+  expect_identical(genes$ncbi_id[known], gaps$agr_ncbi_id[known])
+  # Most genes with multiple AGR Ensembl IDs get one of them
+  multiple <- gaps$case == "ensembl_multiple"
+  agr_ids <- strsplit(gaps$agr_ensembl_id[multiple], "|", fixed = TRUE)
+  selected <- genes$ensembl_id[multiple]
+  assigned <- !is.na(selected)
+  expect_gt(mean(assigned), 0.9)
+  listed <- mapply(`%in%`, selected[assigned], agr_ids[assigned])
+  expect_identical(unname(selected[assigned][!listed]), character())
+  # Some genes with no AGR Ensembl ID get one from other sources
+  none <- gaps$case == "ensembl_none"
+  expect_gt(mean(!is.na(genes$ensembl_id[none])), 0.2)
+})
+
+# Orthologs of genes for which AGR does not list only one NCBI or Ensembl ID
+test_that("difficult pairs keep their expected IDs and symbols", {
+  cases <- read.delim(test_path("fixtures", "difficult-pairs.tsv"))
+  expected <- cases[c(
+    "taxon_id",
+    "agr_id",
+    "ncbi_id",
+    "symbol",
+    "ensembl_id"
+  )]
+  partners <- cases[c(
+    "partner_taxon_id",
+    "partner_agr_id",
+    "partner_ncbi_id",
+    "partner_symbol",
+    "partner_ensembl_id"
+  )]
+  names(partners) <- names(expected)
+  expected <- unique(rbind(expected, partners))
+  rownames(expected) <- NULL
+  actual <- genes_df[match(expected$agr_id, genes_df$agr_id), names(expected)]
+  rownames(actual) <- NULL
+  expect_identical(actual, expected)
+})
