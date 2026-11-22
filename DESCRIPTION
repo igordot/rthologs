@@ -22,7 +22,7 @@ Imports:
     dplyr (>= 1.1.1),
     rlang
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.2.0)
 Config/Needs/website: rmarkdown
 Config/roxygen2/version: 8.1.1
 Config/testthat/edition: 3
