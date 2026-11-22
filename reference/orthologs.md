@@ -55,12 +55,7 @@ orthologs(
 
 ## Value
 
-A data frame with one row per distinct input and matching gene pair. The
-columns are `input`, `source_symbol`, `target_symbol`, `target_ncbi_id`,
-and `target_ensembl_id`. With `details = TRUE`, the columns also include
-`source_taxon_id`, `source_ncbi_id`, `source_ensembl_id`,
-`target_taxon_id`, `support` (the methods or sources that support the
-pair), and `support_n` (the number of these).
+A data frame with one row per distinct input and matching gene pair.
 
 ## Details
 
