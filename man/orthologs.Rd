@@ -35,11 +35,6 @@ orthologs(
 }
 \value{
 A data frame with one row per distinct input and matching gene pair.
-The columns are \code{input}, \code{source_symbol}, \code{target_symbol},
-\code{target_ncbi_id}, and \code{target_ensembl_id}. With \code{details = TRUE}, the
-columns also include \code{source_taxon_id}, \code{source_ncbi_id},
-\code{source_ensembl_id}, \code{target_taxon_id}, \code{support} (the methods or sources
-that support the pair), and \code{support_n} (the number of these).
 }
 \description{
 Find cross-species orthologs for a set of genes.
